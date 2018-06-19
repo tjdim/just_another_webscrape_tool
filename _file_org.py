@@ -1,12 +1,13 @@
-""" Organize project
-    * create project directory
+"""Organize project
+    * create project directory if it doesn't exist
     * save data to file
 """
-#author tjdim, Cambridge MA 2018
+#tjdim, Cambridge MA 2018
 import os
 import datetime
+import csv
 
-def return_dir(path):
+def _return_dir(path):
     """Returns directory and creates dir if it doesn't exist
        Args
        ----
@@ -25,21 +26,28 @@ def return_dir(path):
 
 
 
-def save_dat_to_file(keyword, data, tmp_data=True):
-    """ Appends text data to an existing file or adds data to a new .txt file
+def _save_dat_to_file(keyword, data, tmp_data=True, csv_file=False):
+    """Appends text data to an existing file or creates a file and adds data
 
         Args
         ----
-            location (str) : directory name
             keyword (str) : use keyword to create file name
             data (str) : save source code to file
 
-        Output
+        Calls
+        -----
+            return_dir (function)
+
+        Returns
         -------
             creates txt file with data
     """
-    location = return_dir('dat')
-    file_extension = '.txt'
+    location = _return_dir('dat')
+    if csv_file:
+        file_extension = '.csv'
+    else:
+        file_extension = '.txt'
+
     time_stamp = '{:%Y_%m_%d_%H_%M_%s}'.format(datetime.datetime.now())
     #if temporary data add time stamp to file name
     if tmp_data:
@@ -52,8 +60,13 @@ def save_dat_to_file(keyword, data, tmp_data=True):
         file_mode = 'a'
     else:
         file_mode = 'w'
-    with open(file_loc, file_mode) as txtfile:
-        txtfile.write(data)
-    outfile = open(file_loc, 'w')
-    outfile.write(str(data))
-    outfile.close()
+    if type(data) == list:
+        #with open automatically closes file outside 'with' block
+        with open(file_loc, file_mode) as outfile:
+            if csv_file:
+                writer = csv.writer(outfile, delimiter=',')
+                writer.writerow(data)
+            else:
+                for item in data:
+                    outfile.write(item)
+                    outfile.write('\n')
